@@ -1,6 +1,5 @@
 package edu.nyu.pro2.dao;
 
-import edu.nyu.pro2.entity.customer;
 import edu.nyu.pro2.entity.Device;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,7 +11,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @Repository
-public class deviceDao {
+public class DeviceDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -30,8 +29,12 @@ public class deviceDao {
         }
     }
 
+
+
     public List<Device> findAll() {
         return jdbcTemplate.query("SELECT * FROM device WHERE isDeleted = 0", new DeviceMapper());
     }
+
+
 
 }

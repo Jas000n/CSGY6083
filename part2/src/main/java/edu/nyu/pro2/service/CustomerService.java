@@ -1,19 +1,19 @@
 package edu.nyu.pro2.service;
 
 
-import edu.nyu.pro2.entity.customer;
-import edu.nyu.pro2.dao.customerDao;
+import edu.nyu.pro2.entity.Customer;
+import edu.nyu.pro2.dao.CustomerDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 @Service
-public class customerService {
+public class CustomerService {
 
     @Autowired
-    private customerDao customerDao;
+    private CustomerDao customerDao;
 
-    public customer getCustomerById(String id) {
+    public Customer getCustomerById(String id) {
         return customerDao.getCustomerById(id);
     }
 

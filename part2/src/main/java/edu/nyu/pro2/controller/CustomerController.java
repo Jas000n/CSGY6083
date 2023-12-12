@@ -1,26 +1,24 @@
 package edu.nyu.pro2.controller;
 
-import edu.nyu.pro2.entity.customer;
+import edu.nyu.pro2.entity.Customer;
 import edu.nyu.pro2.utils.R;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import edu.nyu.pro2.service.customerService;
-
-import java.util.List;
+import edu.nyu.pro2.service.CustomerService;
 
 @RestController
 @RequestMapping("/customer")
 @CrossOrigin
-public class customerController {
+public class CustomerController {
 
     @Autowired
-    private customerService customerService;
+    private CustomerService customerService;
 
 
     @GetMapping("/{id}")
     public R getCustomerById(@PathVariable String id) {
         try {
-            customer customer = customerService.getCustomerById(id);
+            Customer customer = customerService.getCustomerById(id);
             if (customer != null) {
                 return R.ok().message("Customer retrieved successfully").data("customer", customer);
             } else {
