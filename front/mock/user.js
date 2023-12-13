@@ -30,45 +30,72 @@ module.exports = [
     type: 'post',
     response: config => {
       const { username } = config.body
-      const token = tokens[username]
-
-      // mock error
-      if (!token) {
-        return {
-          code: 60204,
-          message: 'Account and password are incorrect.'
-        }
-      }
+      const token = username + '-token'
 
       return {
         code: 20000,
-        data: token
+        data: { token: token }
       }
+      // mock error
+      // if (!token) {
+      //   return {
+      //     code: 60204,
+      //     message: 'Account and password are incorrect.'
+      //   }
+      // }
+
+      // return {
+      //   code: 20000,
+      //   data: token
+      // }
     }
   },
-
   // get user info
   {
     url: '/vue-admin-template/user/info\.*',
     type: 'get',
     response: config => {
-      const { token } = config.query
-      const info = users[token]
-
-      // mock error
-      if (!info) {
-        return {
-          code: 50008,
-          message: 'Login failed, unable to get user details.'
-        }
-      }
+      const { token } = config.query;
+      // 从 token 中提取用户名
+      const username = token.split('-')[0];
+      
+      // 创建假的用户信息
+      const info = {
+        roles: ['user'], // 或根据 username 定制角色
+        introduction: `I am ${username}`,
+        avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
+        name: username
+      };
 
       return {
         code: 20000,
         data: info
-      }
+      };
     }
   },
+
+  // // get user info
+  // {
+  //   url: '/vue-admin-template/user/info\.*',
+  //   type: 'get',
+  //   response: config => {
+  //     const { token } = config.query
+  //     const info = users[token]
+
+  //     // mock error
+  //     if (!info) {
+  //       return {
+  //         code: 50008,
+  //         message: 'Login failed, unable to get user details.'
+  //       }
+  //     }
+
+  //     return {
+  //       code: 20000,
+  //       data: info
+  //     }
+  //   }
+  // },
 
   // user logout
   {
