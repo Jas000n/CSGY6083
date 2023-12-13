@@ -15,4 +15,6 @@ public class EventService {
     public List<EventDto> getAllEvents() {
         return eventDao.findAllEventsWithDetails();
     }
+    public List<EventDto> getEventsByUserID(String ID){
+        return eventDao.getEventsByUserID(ID);}
 }

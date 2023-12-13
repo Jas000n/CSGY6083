@@ -44,4 +44,14 @@ public class EventDao {
 
 
     }
+    public List<EventDto> getEventsByUserID(String ID){
+        String sql = "SELECT e.eid, sl.address, dt.name,dt.model, e.label, e.value1, e.value2, e.timestamp " +
+                "FROM Event E " +
+                "JOIN device d on D.did = E.did "+
+                "JOIN devicetype dt ON d.dtid = dt.dtid " +
+                "JOIN servicelocation sl ON d.slid = sl.slid " +
+                "WHERE d.isDeleted = 0 and sl.cid = ?";
+        return jdbcTemplate.query(sql, new Object[]{ID}, new EventMapper());
+    }
+
 }
