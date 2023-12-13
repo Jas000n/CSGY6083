@@ -73,6 +73,12 @@ export const constantRoutes = [
         name: 'Device',
         component: () => import('@/views/device/index'),
         meta: { title: 'Device', icon: 'el-icon-s-platform' }
+      },
+      {
+        path: 'event',
+        name: 'Event',
+        component: () => import('@/views/event/index'),
+        meta: { title: 'Event', icon: 'el-icon-s-opportunity' }
       }
     ]
   },
