@@ -8,16 +8,16 @@
       style="width: 300px;"
       @keyup.enter.native="handleSearch"
     >
-      <el-button slot="append" icon="el-icon-search" @click="handleSearch"></el-button>
+      <el-button slot="append" icon="el-icon-search" @click="handleSearch" />
     </el-input>
 
     <!-- 表格 -->
     <el-table :data="filteredData.slice((currentPage-1)*pageSize, currentPage*pageSize)" style="width: 60%">
-      <el-table-column prop="id" label="ID" width="60" sortable></el-table-column>
-      <el-table-column prop="deviceType" label="DeviceType" width="130" sortable></el-table-column>
-      <el-table-column prop="deviceModel" label="DeviceModel" width="150" sortable></el-table-column>
-      <el-table-column prop="deviceLocation" label="DeviceLocation" width="250" sortable></el-table-column>
-      <el-table-column prop="deviceStatus" label="DeviceStatus" width="140" sortable></el-table-column>
+      <el-table-column prop="id" label="ID" width="60" sortable />
+      <el-table-column prop="deviceType" label="DeviceType" width="135" sortable />
+      <el-table-column prop="deviceModel" label="DeviceModel" width="150" sortable />
+      <el-table-column prop="deviceLocation" label="DeviceLocation" width="250" sortable />
+      <el-table-column prop="deviceStatus" label="DeviceStatus" width="140" sortable />
       <el-table-column label="Operation" width="300">
         <template slot-scope="scope">
           <el-button size="mini" @click="handleView(scope.row)">Check</el-button>
@@ -29,14 +29,14 @@
 
     <!-- 分页 -->
     <el-pagination
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
       :current-page="currentPage"
       :page-sizes="[5, 10, 20, 50]"
       :page-size="pageSize"
       layout="total, sizes, prev, pager, next, jumper"
-      :total="filteredData.length">
-    </el-pagination>
+      :total="filteredData.length"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    />
   </div>
 </template>
 
@@ -50,7 +50,7 @@ export default {
       currentPage: 1,
       pageSize: 10,
       tableData: [
-  
+
       ]
     }
   },
@@ -74,62 +74,68 @@ export default {
 
   methods: {
     fetchDevices() {
-      axios.get('http://localhost:8080/device') // 这个URL应该匹配你的后端API端点
-        .then(response => {
-          console.log(response.data);
-          console.log(response.data.device);
-          const devices = response.data.data.device;
-          this.tableData = []; // 确保tableData是空的，然后开始填充数据
+      const userRole = localStorage.getItem('userRole')
+      const userId = localStorage.getItem('userId')
 
-        for (let i = 0; i < devices.length; i++) {
-          let statusText = devices[i].status === '1' ? 'On' : 'Off';
-          this.tableData.push({
-          id: devices[i].did,
-          deviceType: devices[i].name,
-          deviceModel: devices[i].model,
-          deviceLocation: devices[i].address,
-          deviceStatus: statusText
-        });
+      let url
+      if (userRole === 'ADMIN') {
+        // 如果是管理员，获取所有设备
+        url = 'http://localhost:8080/device/all'
+      } else {
+        // 如果是普通用户，只获取与该用户相关的设备
+        // 假设后端API允许通过用户ID来获取设备
+        url = `http://localhost:8080/device/user/${userId}`
       }
+      axios.get(url) // 这个URL应该匹配你的后端API端点
+        .then(response => {
+          console.log(response.data)
+          const devices = response.data.data.device
+          this.tableData = [] // 确保tableData是空的，然后开始填充数据
 
-        
-          
+          for (let i = 0; i < devices.length; i++) {
+            const statusText = devices[i].status === '1' ? 'On' : 'Off'
+            this.tableData.push({
+              id: devices[i].did,
+              deviceType: devices[i].name,
+              deviceModel: devices[i].model,
+              deviceLocation: devices[i].address,
+              deviceStatus: statusText
+            })
+          }
         })
         .catch(error => {
-          console.error('Error fetching devices:', error);
-          
+          console.error('Error fetching devices:', error)
         })
-        
     },
 
     handleSearch() {
       // 根据search进行搜索，该方法将重新计算filteredData
-      this.currentPage = 1; // 重置当前页码为1
+      this.currentPage = 1 // 重置当前页码为1
     },
     handleSizeChange(newSize) {
-      this.pageSize = newSize;
+      this.pageSize = newSize
     },
     handleCurrentChange(newPage) {
-      this.currentPage = newPage;
+      this.currentPage = newPage
     },
     handleView(row) {
       // 查看操作的逻辑
-      console.log('查看操作', row);
+      console.log('查看操作', row)
     },
     handleEdit(row) {
       // 修改操作的逻辑
-      console.log('修改操作', row);
+      console.log('修改操作', row)
       // 假设有一个用于显示修改表单的标志变量，例如 `isEditFormVisible`
       // 设置该变量为 true 并将当前行的数据传递给表单
       this.isEditFormVisible = true
-      this.currentEditRow = row; // 假设有一个变量来存储当前编辑的行
+      this.currentEditRow = row // 假设有一个变量来存储当前编辑的行
     },
     handleDelete(row) {
       // 删除操作的逻辑
-      console.log('删除操作', row);
-      const index = this.tableData.indexOf(row);
+      console.log('删除操作', row)
+      const index = this.tableData.indexOf(row)
       if (index !== -1) {
-        this.tableData.splice(index, 1);
+        this.tableData.splice(index, 1)
       }
     }
   }

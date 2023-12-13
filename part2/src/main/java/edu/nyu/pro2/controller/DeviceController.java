@@ -2,6 +2,7 @@ package edu.nyu.pro2.controller;
 
 import edu.nyu.pro2.dto.DeviceDto;
 import edu.nyu.pro2.entity.Customer;
+import edu.nyu.pro2.entity.Device;
 import edu.nyu.pro2.service.CustomerService;
 import edu.nyu.pro2.service.DeviceService;
 import edu.nyu.pro2.utils.R;
@@ -18,7 +19,7 @@ public class DeviceController {
     private DeviceService deviceService;
 
 
-    @GetMapping
+    @GetMapping("/all")
     public R getAllDevices() {
         try {
             List<DeviceDto> device = deviceService.getAllDevices();
@@ -32,4 +33,15 @@ public class DeviceController {
             return R.error().message("Error retrieving device: " + e.getMessage());
         }
     }
+
+    // 获取特定用户的设备（普通用户用）
+//    @GetMapping("/user/{userId}")
+//    public R getDevicesByUserId(@PathVariable String userId) {
+//        try {
+//            List<Device> devices = deviceService.getDevicesByUserId(userId);
+//            return R.ok().data("devices", devices);
+//        } catch (Exception e) {
+//            return R.error().message("Error retrieving devices for user " + userId + ": " + e.getMessage());
+//        }
+//    }
 }

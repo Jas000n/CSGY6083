@@ -109,7 +109,14 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
+          const { username } = this.loginForm;
+          const userRole = username === 'admin' ? 'ADMIN' : 'USER';
+
+          // 存储用户角色和ID（或用户名）
+          localStorage.setItem('userRole', userRole);
+          localStorage.setItem('userId', username);
+
+            this.$store.dispatch('user/login', this.loginForm).then(() => {
             this.$router.push({ path: this.redirect || '/' })
             this.loading = false
           }).catch(() => {
