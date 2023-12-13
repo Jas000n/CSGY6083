@@ -3,7 +3,7 @@
     <!-- 搜索框 -->
     <el-input
       v-model="search"
-      placeholder="请输入搜索内容"
+      placeholder="Enter search content"
       class="filter-item"
       style="width: 300px;"
       @keyup.enter.native="handleSearch"
@@ -12,16 +12,17 @@
     </el-input>
 
     <!-- 表格 -->
-    <el-table :data="filteredData.slice((currentPage-1)*pageSize, currentPage*pageSize)" style="width: 50%">
-      <el-table-column prop="id" label="ID" width="60"></el-table-column>
-      <el-table-column prop="deviceType" label="设备类型" width="120"></el-table-column>
-      <el-table-column prop="deviceModel" label="设备型号" width="200"></el-table-column>
-      <el-table-column prop="deviceLocation" label="设备位置" width="120"></el-table-column>
-      <el-table-column prop="deviceStatus" label="设备状态" width="100"></el-table-column>
-      <el-table-column label="操作" width="180">
+    <el-table :data="filteredData.slice((currentPage-1)*pageSize, currentPage*pageSize)" style="width: 60%">
+      <el-table-column prop="id" label="ID" width="60" sortable></el-table-column>
+      <el-table-column prop="deviceType" label="DeviceType" width="130" sortable></el-table-column>
+      <el-table-column prop="deviceModel" label="DeviceModel" width="150" sortable></el-table-column>
+      <el-table-column prop="deviceLocation" label="DeviceLocation" width="250" sortable></el-table-column>
+      <el-table-column prop="deviceStatus" label="DeviceStatus" width="140" sortable></el-table-column>
+      <el-table-column label="Operation" width="300">
         <template slot-scope="scope">
-          <el-button size="mini" @click="handleView(scope.row)">查看</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+          <el-button size="mini" @click="handleView(scope.row)">Check</el-button>
+          <el-button size="mini" type="warning" @click="handleEdit(scope.row)">Modify</el-button>
+          <el-button size="mini" type="danger" @click="handleDelete(scope.row)">Delete</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -40,6 +41,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   data() {
     return {
@@ -47,14 +50,7 @@ export default {
       currentPage: 1,
       pageSize: 10,
       tableData: [
-        // 填入您的数据
-        { id: 1, deviceType: '类型1', deviceModel: '型号1', deviceLocation: '位置1', deviceStatus: '状态1' },
-        { id: 1, deviceType: '类型1', deviceModel: '型号1', deviceLocation: '位置1', deviceStatus: '状态1' },
-        { id: 1, deviceType: '类型1', deviceModel: '型号1', deviceLocation: '位置1', deviceStatus: '状态1' },
-        { id: 1, deviceType: '类型1', deviceModel: '型号1', deviceLocation: '位置1', deviceStatus: '状态1' },
-        { id: 1, deviceType: '类型1', deviceModel: '型号1', deviceLocation: '位置1', deviceStatus: '状态1' },
-        { id: 1, deviceType: '类型1', deviceModel: '型号1', deviceLocation: '位置1', deviceStatus: '状态1' },
-        // ...更多数据
+  
       ]
     }
   },
@@ -66,13 +62,46 @@ export default {
           data.deviceModel.includes(this.search) ||
           data.deviceLocation.includes(this.search) ||
           data.deviceStatus.includes(this.search)
-        );
+        )
       } else {
-        return this.tableData;
+        return this.tableData
       }
     }
   },
+  mounted() {
+    this.fetchDevices()
+  },
+
   methods: {
+    fetchDevices() {
+      axios.get('http://localhost:8080/device') // 这个URL应该匹配你的后端API端点
+        .then(response => {
+          console.log(response.data);
+          console.log(response.data.device);
+          const devices = response.data.data.device;
+          this.tableData = []; // 确保tableData是空的，然后开始填充数据
+
+        for (let i = 0; i < devices.length; i++) {
+          let statusText = devices[i].status === '1' ? 'On' : 'Off';
+          this.tableData.push({
+          id: devices[i].did,
+          deviceType: devices[i].name,
+          deviceModel: devices[i].model,
+          deviceLocation: devices[i].address,
+          deviceStatus: statusText
+        });
+      }
+
+        
+          
+        })
+        .catch(error => {
+          console.error('Error fetching devices:', error);
+          
+        })
+        
+    },
+
     handleSearch() {
       // 根据search进行搜索，该方法将重新计算filteredData
       this.currentPage = 1; // 重置当前页码为1
@@ -86,6 +115,14 @@ export default {
     handleView(row) {
       // 查看操作的逻辑
       console.log('查看操作', row);
+    },
+    handleEdit(row) {
+      // 修改操作的逻辑
+      console.log('修改操作', row);
+      // 假设有一个用于显示修改表单的标志变量，例如 `isEditFormVisible`
+      // 设置该变量为 true 并将当前行的数据传递给表单
+      this.isEditFormVisible = true
+      this.currentEditRow = row; // 假设有一个变量来存储当前编辑的行
     },
     handleDelete(row) {
       // 删除操作的逻辑
@@ -108,7 +145,7 @@ export default {
 }
 
 .el-table {
-  width: calc(100% - 40px); /* 表格宽度稍小于容器宽度，留出边距 */
+  width: calc(100% - 2px); /* 表格宽度稍小于容器宽度，留出边距 */
   margin: 20px; /* 表格上下边距为20px */
 }
 
