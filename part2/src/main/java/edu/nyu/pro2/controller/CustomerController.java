@@ -1,10 +1,13 @@
 package edu.nyu.pro2.controller;
 
+import edu.nyu.pro2.dto.DeviceDto;
 import edu.nyu.pro2.entity.Customer;
 import edu.nyu.pro2.utils.R;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import edu.nyu.pro2.service.CustomerService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/customer")
@@ -26,6 +29,22 @@ public class CustomerController {
             }
         } catch (Exception e) {
             return R.error().message("Error retrieving customer: " + e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/all")
+    public R getAllCids() {
+        try {
+            List<String> cids = customerService.getAllCids();
+
+            if (cids != null) {
+                return R.ok().message("cids retrieved successfully").data("cids",cids);
+            } else {
+                return R.error().message("cids not found");
+            }
+        } catch (Exception e) {
+            return R.error().message("Error retrieving cids: " + e.getMessage());
         }
     }
 }

@@ -6,6 +6,9 @@ import edu.nyu.pro2.dao.CustomerDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Array;
+import java.util.List;
+
 
 @Service
 public class CustomerService {
@@ -16,6 +19,10 @@ public class CustomerService {
     public Customer getCustomerById(String id) {
         return customerDao.getCustomerById(id);
     }
+
+
+    public List<String> getAllCids(){return customerDao.getAllCids();}
+
 
     // Other business methods
 }

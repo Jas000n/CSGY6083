@@ -13,6 +13,10 @@ public class DeviceDto {
 
     private String did;
 
+    private String dtid;
+
+    private String slid;
+
     private String name;
 
     private String model;

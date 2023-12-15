@@ -15,12 +15,53 @@
       </el-input>
     </div>
 
+    <!-- 设备详情模态框 -->
+    <el-dialog :title="`Device Details`" :visible.sync="showDetailsModal" @close="closeDetailsModal">
+      <div v-if="currentDeviceDetails">
+        <p><strong>Device Type:</strong> {{ currentDeviceDetails.name }}</p>
+        <p><strong>Model:</strong> {{ currentDeviceDetails.model }}</p>
+        <!-- 条件渲染不同的设备类型 -->
+        <div v-if="currentDeviceDetails.name === 'AC'">
+          <p><strong>Set Temperature:</strong> {{ currentDeviceDetails.value1 }}</p>
+          <p><strong>AC Mode:</strong> {{ currentDeviceDetails.value2 }}</p>
+        </div>
+
+        <div v-else-if="currentDeviceDetails.name === 'Drier'">
+          <p><strong>Drying Mode:</strong> {{ currentDeviceDetails.value1 }}</p>
+        </div>
+
+        <div v-else-if="currentDeviceDetails.name === 'Dish Washer'">
+          <p><strong>Washing Mode:</strong> {{ currentDeviceDetails.value1 }}</p>
+        </div>
+
+        <div v-else-if="currentDeviceDetails.name === 'Dish Washer'">
+          <p><strong>Washing Mode:</strong> {{ currentDeviceDetails.value1 }}</p>
+        </div>
+
+        <div v-if="currentDeviceDetails.name === 'Light'">
+          <p><strong>Brightness:</strong> {{ currentDeviceDetails.value1 }}</p>
+          <p><strong>Color Temperature:</strong> {{ currentDeviceDetails.value2 }}</p>
+        </div>
+
+        <div v-if="currentDeviceDetails.name === 'Refrigerator'">
+          <p><strong>Freezer Temperature:</strong> {{ currentDeviceDetails.value1 }}</p>
+          <p><strong>Refrigerator Temperature:</strong> {{ currentDeviceDetails.value2 }}</p>
+        </div>
+
+        <!-- 可以添加其他设备类型的条件 -->
+        <!-- <div v-else>
+          <p><strong>Value 1:</strong> {{ currentDeviceDetails.value1 }}</p>
+          <p><strong>Value 2:</strong> {{ currentDeviceDetails.value2 }}</p>
+        </div> -->
+      </div>
+    </el-dialog>
+
     <!-- 添加和修改设备的模态框 -->
     <el-dialog :title="formTitle" :visible.sync="showDeviceModel">
       <el-form :model="deviceForm">
         <!-- 表单内容 -->
-        <el-form-item label="UID">
-          <el-select v-model="deviceForm.uid" :disabled="isUser">
+        <el-form-item v-if="formMode === 'add'" label="UID">
+          <el-select v-model="deviceForm.uid" :disabled="isUser" @change="onUIDChange">
             <!-- 如果isUser为true，只显示当前用户的UID -->
             <template v-if="isUser">
               <el-option
@@ -50,7 +91,7 @@
         </el-form-item>
 
         <el-form-item label="Device Type">
-          <el-select v-model="deviceForm.deviceType">
+          <el-select v-model="deviceForm.deviceType" @change="onDeviceTypeChange">
             <el-option v-for="type in deviceTypes" :key="type" :label="type" :value="type" />
           </el-select>
         </el-form-item>
@@ -83,7 +124,6 @@
         </template>
       </el-table-column>
     </el-table>
-
     <!-- 分页 -->
     <el-pagination
       :current-page="currentPage"
@@ -103,14 +143,14 @@ import axios from 'axios'
 export default {
   data() {
     return {
+      showDetailsModal: false,
+      currentDeviceDetails: null,
+      currentDeviceID: null,
       search: '',
       currentPage: 1,
       pageSize: 10,
       tableData: [
-
       ],
-
-      // ... 其他数据不变 ...
       showDeviceModel: false,
       formTitle: 'Add New Device', // 标题可以动态更改
       deviceForm: {
@@ -120,8 +160,11 @@ export default {
         deviceType: '',
         model: ''
       },
-      formMode: 'add' // 'add' 或 'modify' 来区分表单模式
-
+      formMode: 'add', // 'add' 或 'modify' 来区分表单模式
+      uids: [], // 存储UIDs的数组
+      locations: [], // 存储ServiceLocation的数组
+      deviceTypes: [], // 存储DeviceType的数组
+      models: [] // 存储Model的数组
     }
   },
   computed: {
@@ -140,9 +183,94 @@ export default {
   },
   mounted() {
     this.fetchDevices()
+    this.fetchUIDs()
+    this.fetchLocations()
+    this.fetchDeviceTypes()
+    this.fetchModels()
   },
 
   methods: {
+    closeDetailsModal() {
+      this.showDetailsModal = false
+    },
+    fetchUIDs() {
+    // 从后端获取UIDs
+      axios.get('http://localhost:8080/customer/all') // 替换为后端实际的API端点
+        .then(response => {
+          this.uids = response.data.data.cids
+        })
+        .catch(error => {
+          console.error('Error fetching UIDs:', error)
+        })
+    },
+    fetchLocations() {
+    // 从后端获取ServiceLocation数据
+      axios.get('http://localhost:8080/servicelocation/all') // 替换为后端实际的API端点
+        .then(response => {
+          this.locations = response.data.data.address
+        })
+        .catch(error => {
+          console.error('Error fetching locations:', error)
+        })
+    },
+    fetchDeviceTypes() {
+    // 从后端获取DeviceType数据
+      axios.get('http://localhost:8080/devicetype/name') // 替换为后端实际的API端点
+        .then(response => {
+          const uniqueDeviceTypes = new Set(response.data.data.name)
+          this.deviceTypes = Array.from(uniqueDeviceTypes)
+        })
+        .catch(error => {
+          console.error('Error fetching device types:', error)
+        })
+    },
+    onUIDChange() {
+      const selectedUID = this.deviceForm.uid
+      if (selectedUID) {
+        this.fetchLocationsForUser(selectedUID)
+      } else {
+        this.locations = [] // 如果没有选中的UID，则清空地址选项
+      }
+    },
+    fetchLocationsForUser(uid) {
+      axios.get(`http://localhost:8080/servicelocation/user/${uid}`) // 后端API端点
+        .then(response => {
+          console.log(response.data)
+          this.locations = response.data// 假设后端返回的是地址数组
+        })
+        .catch(error => {
+          console.error('Error fetching locations for user:', error)
+        })
+    },
+    // 当选中的设备类型变化时，更新型号的下拉选项
+    onDeviceTypeChange() {
+      if (this.deviceForm.deviceType) {
+        this.fetchModelsByType(this.deviceForm.deviceType)
+      } else {
+        this.models = [] // 如果没有选中类型，则清空型号选项
+      }
+    },
+    fetchModels() {
+    // 从后端获取Model数据
+      axios.get('http://localhost:8080/devicetype/model') // 替换为后端实际的API端点
+        .then(response => {
+          this.models = response.data.data.model
+        })
+        .catch(error => {
+          console.error('Error fetching models:', error)
+        })
+    },
+    fetchModelsByType(type) {
+      axios.get(`http://localhost:8080/devicetype/${type}/models`) // 确保这个URL与后端API匹配
+        .then(response => {
+          console.log(response)
+          this.models = response.data.data.models // 假设后端返回的是一个型号的数组
+        })
+        .catch(error => {
+          console.error(`Error fetching models for device type ${type}:`, error)
+        })
+    },
+
     // 打开添加设备的模态框
     openAddDeviceForm() {
       this.formMode = 'add'
@@ -157,25 +285,62 @@ export default {
       // 假设用户的UID是登录时保存在localStorage的
         this.deviceForm.uid = localStorage.getItem('userId')
       }
-
       this.showDeviceModel = true
     },
 
     // 打开修改设备的模态框
     openModifyDeviceForm(device) {
+      console.log(device)
       this.formMode = 'modify'
       this.formTitle = 'Modify Device'
-      this.deviceForm = { ...device } // 复制设备数据到表单
+      this.currentDeviceID = device.id
+      // 确保你的device对象有正确的属性名
+      this.deviceForm = {
+        serviceLocation: device.deviceLocation, // 或其他对应的字段名
+        deviceType: device.deviceType, // 或其他对应的字段名
+        model: device.deviceModel // 或其他对应的字段名
+      }
+      // this.deviceForm = { ...device } // 复制设备数据到表单
       this.showDeviceModel = true
     },
 
     // 提交表单
     submitDeviceForm() {
+      let payload
+      let url
+      const method = this.formMode === 'add' ? 'post' : 'put'
+
       if (this.formMode === 'add') {
-        // 添加设备的逻辑
-      } else {
-        // 修改设备的逻辑
+        // 构建添加模式下的payload
+        payload = {
+          name: this.deviceForm.deviceType,
+          model: this.deviceForm.model,
+          address: this.deviceForm.serviceLocation
+        }
+        url = 'http://localhost:8080/device/add' // 添加设备的API端点
+      } else if (this.formMode === 'modify') {
+        // 构建修改模式下的payload
+        payload = {
+          name: this.deviceForm.deviceType,
+          model: this.deviceForm.model,
+          address: this.deviceForm.serviceLocation
+        }
+        url = `http://localhost:8080/device/update/${this.currentDeviceID}` // 更新设备的API端点
       }
+
+      axios({
+        method: method,
+        url: url,
+        data: payload
+      })
+        .then(response => {
+          console.log(this.currentDeviceID)
+          this.showDeviceModel = false
+          this.fetchDevices() // 重新获取设备列表以显示新添加或更新的设备
+        })
+        .catch(error => {
+          console.error('Error submitting device form:', error)
+        })
     },
 
     // 重置表单
@@ -233,9 +398,16 @@ export default {
     handleCurrentChange(newPage) {
       this.currentPage = newPage
     },
-    handleView(row) {
-      // 查看操作的逻辑
-      console.log('查看操作', row)
+    handleView(device) {
+      // 假设后端有一个API端点可以通过设备ID获取设备的详细信息
+      axios.get(`http://localhost:8080/device/details/${device.id}`)
+        .then(response => {
+          this.currentDeviceDetails = response.data.data.deviceDetails
+          this.showDetailsModal = true // 打开模态框
+        })
+        .catch(error => {
+          console.error('Error fetching device details:', error)
+        })
     },
     handleEdit(row) {
       // 修改操作的逻辑
@@ -245,13 +417,16 @@ export default {
       this.isEditFormVisible = true
       this.currentEditRow = row // 假设有一个变量来存储当前编辑的行
     },
-    handleDelete(row) {
-      // 删除操作的逻辑
-      console.log('删除操作', row)
-      const index = this.tableData.indexOf(row)
-      if (index !== -1) {
-        this.tableData.splice(index, 1)
-      }
+    handleDelete(device) {
+      axios.delete(`http://localhost:8080/device/delete/${device.id}`)
+        .then(response => {
+          // 处理成功的响应
+          console.log('Device deleted successfully')
+          this.fetchDevices() // 重新加载设备列表
+        })
+        .catch(error => {
+          console.error('Error deleting device:', error)
+        })
     }
   }
 }

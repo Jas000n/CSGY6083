@@ -17,4 +17,26 @@ public class DeviceService {
     public List<DeviceDto> getAllDevices() {
         return deviceDao.findAllDevicesWithDetails();
     }
+
+    public int addDevice(DeviceDto deviceDto){
+        return deviceDao.addDevice(deviceDto);
+    }
+
+    public int updateDevice(String did, DeviceDto deviceDto){
+        return deviceDao.updateDevice(did,deviceDto);
+    }
+
+    public DeviceDto findDeviceDetailsById(String did){
+        return deviceDao.findDeviceDetailsById(did);
+    }
+
+
+    public boolean deleteDevice(String did) {
+        int rowsAffected = deviceDao.deleteDevice(did);
+        return rowsAffected > 0;
+    }
+
+
+
+
 }
