@@ -88,17 +88,17 @@ public class DeviceController {
 
 
 
-
-
-
-    // 获取特定用户的设备（普通用户用）
-//    @GetMapping("/user/{userId}")
-//    public R getDevicesByUserId(@PathVariable String userId) {
-//        try {
-//            List<Device> devices = deviceService.getDevicesByUserId(userId);
-//            return R.ok().data("devices", devices);
-//        } catch (Exception e) {
-//            return R.error().message("Error retrieving devices for user " + userId + ": " + e.getMessage());
-//        }
-//    }
+    @GetMapping("/user/{userId}")
+    public R getUserDevices(@PathVariable String userId) {
+        try {
+            List<DeviceDto> device = deviceService.findDevicesByUserId(userId);
+            if (device != null && !device.isEmpty()) {
+                return R.ok().message("Devices fetched successfully").data("device", device);
+            } else {
+                return R.error().message("No devices found for the user");
+            }
+        } catch (Exception e) {
+            return R.error().message("Error fetching devices: " + e.getMessage());
+        }
+    }
 }

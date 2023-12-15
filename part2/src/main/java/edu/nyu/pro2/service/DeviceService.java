@@ -36,6 +36,9 @@ public class DeviceService {
         return rowsAffected > 0;
     }
 
+    public List<DeviceDto> findDevicesByUserId(String uid){
+        return deviceDao.findDevicesByUserId(uid);
+    }
 
 
 

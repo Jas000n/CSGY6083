@@ -182,9 +182,19 @@ export default {
     }
   },
   mounted() {
+    const userRole = localStorage.getItem('userRole')
+    const userId = localStorage.getItem('userId')
+    this.isUser = userRole === 'USER'
+    if (this.isUser) {
+      this.deviceForm.uid = userId
+      // 如果是普通用户，只获取该用户的地址
+      this.fetchLocationsForUser(userId)
+    } else {
+    // 如果是管理员，获取所有地址
+      this.fetchLocations()
+    }
     this.fetchDevices()
     this.fetchUIDs()
-    this.fetchLocations()
     this.fetchDeviceTypes()
     this.fetchModels()
   },

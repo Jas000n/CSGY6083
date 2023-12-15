@@ -154,6 +154,30 @@ public class DeviceDao {
         return jdbcTemplate.update(sql, did);
     }
 
+    public List<DeviceDto> findDevicesByUserId(String userId) {
+        String sql = "SELECT d.did, d.dtid, dt.name, dt.model, sl.slid, sl.address, d.status, d.value1, d.value2, d.versionID " +
+                "FROM device d " +
+                "JOIN devicetype dt ON d.dtid = dt.dtid " +
+                "JOIN servicelocation sl ON d.slid = sl.slid " +
+                "WHERE sl.cid = ? AND d.isDeleted = 0"; // 假设设备表中有uid字段
+        return jdbcTemplate.query(sql, new Object[]{userId}, new RowMapper<DeviceDto>() {
+            public DeviceDto mapRow(ResultSet rs, int rowNum) throws SQLException {
+                DeviceDto device = new DeviceDto();
+                device.setDid(rs.getString("did"));
+                device.setDtid(rs.getString("dtid"));
+                device.setSlid(rs.getString("slid"));
+                device.setName(rs.getString("name"));
+                device.setModel(rs.getString("model"));
+                device.setAddress(rs.getString("address"));
+                device.setStatus(rs.getString("status"));
+                device.setValue1(rs.getString("value1"));
+                device.setValue2(rs.getString("value2"));
+                device.setVersionID(rs.getInt("versionID"));;
+                return device;
+            }
+        });
+    }
+
 
 
 
