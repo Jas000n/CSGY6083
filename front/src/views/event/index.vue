@@ -1,50 +1,49 @@
 <template>
-    <div class="app-container">
-      <!-- Search Box -->
-      <el-input
-        v-model="search"
-        placeholder="Enter search content"
-        class="filter-item"
-        style="width: 300px;"
-        @keyup.enter.native="handleSearch"
-      >
-        <el-button slot="append" icon="el-icon-search" @click="handleSearch" />
-      </el-input>
-  
-      <!-- Event Table -->
-      <el-table :data="filteredData.slice((currentPage-1)*pageSize, currentPage*pageSize)" style="width: 60%">
-        <el-table-column prop="eventID" label="Event ID" width="60" sortable />
-        <el-table-column prop="eventLocation" label="Event Location" width="250" sortable />
-        <el-table-column prop="eventDeviceModel" label="Device Model" width="150" sortable />
-        <el-table-column prop="eventDevice" label="Device" width="140" sortable />
-        <el-table-column prop="eventType" label="Event Type" width="140" sortable />
-        <el-table-column prop="eventValue1" label="Event Value 1" width="140" sortable />
-        <el-table-column prop="eventValue2" label="Event Value 2" width="140" sortable />
-        <el-table-column prop="eventTime" label="Event Time" width="160" sortable />
-        <el-table-column label="Operation" width="300">
-          <template slot-scope="scope">
-            <el-button size="mini" @click="handleView(scope.row)">Check</el-button>
-            <el-button size="mini" type="warning" @click="handleEdit(scope.row)">Modify</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row)">Delete</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-  
-      <!-- Pagination -->
-      <el-pagination
-        :current-page="currentPage"
-        :page-sizes="[5, 10, 20, 50]"
-        :page-size="pageSize"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="filteredData.length"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
-  </template>
-  
-  
-  <script>
+  <div class="app-container">
+    <!-- Search Box -->
+    <el-input
+      v-model="search"
+      placeholder="Enter search content"
+      class="filter-item"
+      style="width: 300px;"
+      @keyup.enter.native="handleSearch"
+    >
+      <el-button slot="append" icon="el-icon-search" @click="handleSearch" />
+    </el-input>
+
+    <!-- Event Table -->
+    <el-table :data="filteredData.slice((currentPage-1)*pageSize, currentPage*pageSize)" style="width: 60%">
+      <el-table-column prop="eventID" label="Event ID" width="60" sortable />
+      <el-table-column prop="eventLocation" label="Event Location" width="250" sortable />
+      <el-table-column prop="eventDeviceModel" label="Device Model" width="150" sortable />
+      <el-table-column prop="eventDevice" label="Device" width="140" sortable />
+      <el-table-column prop="eventType" label="Event Type" width="140" sortable />
+      <el-table-column prop="eventValue1" label="Event Value 1" width="140" sortable />
+      <el-table-column prop="eventValue2" label="Event Value 2" width="140" sortable />
+      <el-table-column prop="eventTime" label="Event Time" width="160" sortable />
+      <el-table-column label="Operation" width="300">
+        <template slot-scope="scope">
+          <el-button size="mini" @click="handleView(scope.row)">Check</el-button>
+          <el-button size="mini" type="warning" @click="handleEdit(scope.row)">Modify</el-button>
+          <el-button size="mini" type="danger" @click="handleDelete(scope.row)">Delete</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!-- Pagination -->
+    <el-pagination
+      :current-page="currentPage"
+      :page-sizes="[5, 10, 20, 50]"
+      :page-size="pageSize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="filteredData.length"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    />
+  </div>
+</template>
+
+<script>
 import axios from 'axios'
 
 export default {
@@ -58,17 +57,17 @@ export default {
   },
   computed: {
     filteredData() {
-    if (this.search) {
-      return this.tableData.filter(data =>
-        Object.values(data).some(value => 
-          value != null && value.toString().toLowerCase().includes(this.search.toLowerCase())
+      if (this.search) {
+        return this.tableData.filter(data =>
+          Object.values(data).some(value =>
+            value != null && value.toString().toLowerCase().includes(this.search.toLowerCase())
+          )
         )
-      )
-    } else {
-      return this.tableData
+      } else {
+        return this.tableData
+      }
     }
-  }
-},
+  },
   mounted() {
     this.fetchEvents()
   },
@@ -83,7 +82,7 @@ export default {
       } else {
         url = `http://localhost:8080/event/user/${userId}`
       }
-      
+
       axios.get(url)
         .then(response => {
           const events = response.data.data.eventList
