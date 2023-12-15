@@ -79,6 +79,12 @@ export const constantRoutes = [
         name: 'Event',
         component: () => import('@/views/event/index'),
         meta: { title: 'Event', icon: 'el-icon-s-opportunity' }
+      },
+      {
+        path: 'price',
+        name: 'Price',
+        component: () => import('@/views/price/index'),
+        meta: { title: 'Pirce', icon: 'el-icon-money' }
       }
     ]
   },

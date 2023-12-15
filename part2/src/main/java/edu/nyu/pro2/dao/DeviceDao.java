@@ -2,6 +2,7 @@ package edu.nyu.pro2.dao;
 
 import edu.nyu.pro2.dto.DeviceDto;
 import edu.nyu.pro2.entity.Device;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -134,9 +135,9 @@ public class DeviceDao {
                 public DeviceDto mapRow(ResultSet rs, int rowNum) throws SQLException {
                     DeviceDto device = new DeviceDto();
                     device.setDid(rs.getString("did"));
-                    device.setName(rs.getString("name"));
-                    device.setModel(rs.getString("model"));
-                    device.setAddress(rs.getString("address"));
+                    device.setName(StringEscapeUtils.escapeHtml4(rs.getString("name")));
+                    device.setModel(StringEscapeUtils.escapeHtml4(rs.getString("model")));
+                    device.setAddress(StringEscapeUtils.escapeHtml4(rs.getString("address")));
                     device.setStatus(rs.getString("status"));
                     device.setValue1(rs.getString("value1"));
                     device.setValue2(rs.getString("value2"));
