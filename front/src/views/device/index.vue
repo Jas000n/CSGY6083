@@ -81,6 +81,9 @@
               />
             </template>
           </el-select>
+          <el-alert v-if="formErrors.uid" type="error" :closable="false">
+            {{ formErrors.uid }}
+          </el-alert>
 
         </el-form-item>
 
@@ -88,18 +91,27 @@
           <el-select v-model="deviceForm.serviceLocation">
             <el-option v-for="location in locations" :key="location" :label="location" :value="location" />
           </el-select>
+          <el-alert v-if="formErrors.serviceLocation" type="error" :closable="false">
+            {{ formErrors.serviceLocation }}
+          </el-alert>
         </el-form-item>
 
         <el-form-item label="Device Type">
           <el-select v-model="deviceForm.deviceType" @change="onDeviceTypeChange">
             <el-option v-for="type in deviceTypes" :key="type" :label="type" :value="type" />
           </el-select>
+          <el-alert v-if="formErrors.deviceType" type="error" :closable="false">
+            {{ formErrors.deviceType }}
+          </el-alert>
         </el-form-item>
 
         <el-form-item label="Model">
           <el-select v-model="deviceForm.model">
             <el-option v-for="model in models" :key="model" :label="model" :value="model" />
           </el-select>
+          <el-alert v-if="formErrors.model" type="error" :closable="false">
+            {{ formErrors.model }}
+          </el-alert>
         </el-form-item>
       <!-- ... -->
       </el-form>
@@ -143,6 +155,12 @@ import axios from 'axios'
 export default {
   data() {
     return {
+      formErrors: {
+        uid: null,
+        serviceLocation: null,
+        deviceType: null,
+        model: null
+      },
       showDetailsModal: false,
       currentDeviceDetails: null,
       currentDeviceID: null,
@@ -283,6 +301,7 @@ export default {
 
     // 打开添加设备的模态框
     openAddDeviceForm() {
+      this.resetFormErrors()
       this.formMode = 'add'
       this.formTitle = 'Add New Device'
       this.resetDeviceForm()
@@ -297,9 +316,18 @@ export default {
       }
       this.showDeviceModel = true
     },
+    resetFormErrors() {
+      this.formErrors = {
+        uid: null,
+        serviceLocation: null,
+        deviceType: null,
+        model: null
+      }
+    },
 
     // 打开修改设备的模态框
     openModifyDeviceForm(device) {
+      this.resetFormErrors()
       console.log(device)
       this.formMode = 'modify'
       this.formTitle = 'Modify Device'
@@ -313,9 +341,22 @@ export default {
       // this.deviceForm = { ...device } // 复制设备数据到表单
       this.showDeviceModel = true
     },
+    validateForm() {
+      this.formErrors.uid = this.deviceForm.uid ? null : "UID can't be null"
+      this.formErrors.serviceLocation = this.deviceForm.serviceLocation ? null : "Location can't be null"
+      this.formErrors.deviceType = this.deviceForm.deviceType ? null : "Type can't be null"
+      this.formErrors.model = this.deviceForm.model ? null : "Model can't be null"
+    },
 
     // 提交表单
     submitDeviceForm() {
+      if (this.formMode === 'add') {
+        this.validateForm()
+        // 如果存在任何验证错误，则不提交表单
+        if (Object.values(this.formErrors).some(error => error !== null)) {
+          return
+        }
+      }
       let payload
       let url
       const method = this.formMode === 'add' ? 'post' : 'put'
@@ -344,6 +385,11 @@ export default {
         data: payload
       })
         .then(response => {
+          this.$notify({
+            title: 'Success',
+            message: 'Submit successfully',
+            type: 'success'
+          })
           console.log(this.currentDeviceID)
           this.showDeviceModel = false
           this.fetchDevices() // 重新获取设备列表以显示新添加或更新的设备
@@ -430,6 +476,11 @@ export default {
     handleDelete(device) {
       axios.delete(`http://localhost:8080/device/delete/${device.id}`)
         .then(response => {
+          this.$notify({
+            title: 'Success',
+            message: 'Delete successfully',
+            type: 'success'
+          })
           // 处理成功的响应
           console.log('Device deleted successfully')
           this.fetchDevices() // 重新加载设备列表
