@@ -1,18 +1,15 @@
 <template>
   <div class="app-container">
+    <div ref="chart" style="width: 600px; height: 400px;"></div>
+
     <!-- Search Box -->
-    <el-input
-      v-model="search"
-      placeholder="Enter search content"
-      class="filter-item"
-      style="width: 300px;"
-      @keyup.enter.native="handleSearch"
-    >
+    <el-input v-model="search" placeholder="Enter search content" class="filter-item" style="width: 300px;"
+      @keyup.enter.native="handleSearch">
       <el-button slot="append" icon="el-icon-search" @click="handleSearch" />
     </el-input>
 
     <!-- Price Table -->
-    <el-table :data="filteredData.slice((currentPage-1)*pageSize, currentPage*pageSize)" style="width: 50%">
+    <el-table :data="filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize)" style="width: 50%">
       <el-table-column prop="epid" label="EP ID" width="80" sortable />
       <el-table-column prop="zipcode" label="Zipcode" width="120" sortable />
       <el-table-column prop="price" label="Price ($)" width="120" sortable />
@@ -21,20 +18,15 @@
     </el-table>
 
     <!-- Pagination -->
-    <el-pagination
-      :current-page="currentPage"
-      :page-sizes="[5, 10, 20, 50]"
-      :page-size="pageSize"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="filteredData.length"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-    />
+    <el-pagination :current-page="currentPage" :page-sizes="[5, 10, 20, 50]" :page-size="pageSize"
+      layout="total, sizes, prev, pager, next, jumper" :total="filteredData.length" @size-change="handleSizeChange"
+      @current-change="handleCurrentChange" />
   </div>
 </template>
 
 <script>
 import axios from 'axios'
+import * as echarts from 'echarts';
 
 export default {
   data() {
@@ -60,35 +52,129 @@ export default {
   },
   mounted() {
     this.fetchPrices()
+    // this.initChart();
+    this.fetchDataAndDrawChart();
+
   },
   methods: {
-    fetchPrices() {
-      axios.get('http://localhost:8080/price/all')
-        .then(response => {
-          console.log(response.data)
-          this.tableData = response.data.data.prices.map(price => ({
-            epid: price.epid,
-            zipcode: price.zipcode,
-            price: price.price,
-            time: price.time,
-            isDeleted: price.isDeleted ? 'Yes' : 'No'
-          }))
-        })
-        .catch(error => {
-          console.error('Error fetching prices:', error)
-        })
+
+    
+      fetchDataAndDrawChart() {
+        // 硬编码的电费数据
+        var morningPrices = []; // 早晨电费
+        var eveningPrices = []; // 晚间电费
+        axios.get('http://localhost:8080/price/getRecent')
+          .then(response => {
+            console.log(response.data)
+      
+            var pricess = response.data.data.prices;
+            for (let i = 0; i < response.data.data.prices.length; i++) {
+              if(pricess[i].timeSlot==="DayTime"){
+                morningPrices.push(pricess[i].price)
+              }else{
+                eveningPrices.push(pricess[i].price)
+              }
+              
+            }
+            console.log(morningPrices)
+            
+             // 基于准备好的dom，初始化echarts实例
+        const chart = echarts.init(this.$refs.chart);
+
+// 指定图表的配置项和数据
+const option = {
+  title: {
+    text: 'Last 7 Days Price'
+  },
+  tooltip: {
+    trigger: 'axis'
+  },
+  legend: {
+    data: ['Day Time Energy Price', 'Night Time Energy Price']
+  },
+  xAxis: {
+    type: 'category',
+    boundaryGap: false,
+    data: ['1 Day ago', '2 Days ago', '3 Days ago', '4 Days ago', '5 Days ago', '6 Days ago', 'Today']
+  },
+  yAxis: {
+    type: 'value',
+    min: 0,
+    max: 2
+  },
+  series: [
+    {
+      name: 'Day Time',
+      type: 'line',
+      data: morningPrices
     },
-    handleSearch() {
-      this.currentPage = 1
-    },
-    handleSizeChange(newSize) {
-      this.pageSize = newSize
-    },
-    handleCurrentChange(newPage) {
-      this.currentPage = newPage
+    {
+      name: 'Night Time',
+      type: 'line',
+      data: eveningPrices
+    }
+  ]
+};
+
+// 使用刚指定的配置项和数据显示图表。
+chart.setOption(option);
+            
+          })
+          .catch(error => {
+            console.error('Error fetching prices:', error)
+          })
+       
+
+      },
+      fetchPrices() {
+        axios.get('http://localhost:8080/price/all')
+          .then(response => {
+            //console.log(response.data)
+            this.tableData = response.data.data.prices.map(price => ({
+              epid: price.epid,
+              zipcode: price.zipcode,
+              price: price.price,
+              time: price.time,
+              isDeleted: price.isDeleted ? 'Yes' : 'No'
+            }))
+          })
+          .catch(error => {
+            console.error('Error fetching prices:', error)
+          })
+      },
+      initChart() {
+        const chart = echarts.init(this.$refs.chart);
+        const option = {
+          title: {
+            text: 'Price Over'
+          },
+          tooltip: {},
+          xAxis: {
+            type: 'category',
+            data: ['1月', '2月', '3月', '4月', '5月', '6月']
+          },
+          yAxis: {
+            type: 'value'
+          },
+          series: [{
+            data: [820, 932, 901, 934, 1290, 1330],
+            type: 'line'
+          }]
+        };
+        chart.setOption(option);
+      },
+      handleSearch() {
+        this.currentPage = 1
+      },
+      handleSizeChange(newSize) {
+        this.pageSize = newSize
+      },
+      handleCurrentChange(newPage) {
+        this.currentPage = newPage
+      }
     }
   }
-}
+  
 </script>
 
 <style>
