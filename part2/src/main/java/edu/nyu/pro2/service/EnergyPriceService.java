@@ -1,6 +1,5 @@
 package edu.nyu.pro2.service;
 
-import edu.nyu.pro2.dao.DeviceTypeDao;
 import edu.nyu.pro2.dao.EnergyPriceDao;
 import edu.nyu.pro2.dto.EnergyPriceDTO;
 import edu.nyu.pro2.entity.EnergyPrice;
@@ -21,5 +20,9 @@ public class EnergyPriceService {
 
     public List<EnergyPriceDTO> findLast7DayData(){
         return energyPriceDao.findLast7Day();
+    }
+
+    public List<EnergyPriceDTO> findLast7DayDataByID(String cid){
+        return energyPriceDao.findLast7DayByID(cid);
     }
 }

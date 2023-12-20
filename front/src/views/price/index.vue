@@ -58,123 +58,132 @@ export default {
   },
   methods: {
 
-    
-      fetchDataAndDrawChart() {
-        // 硬编码的电费数据
-        var morningPrices = []; // 早晨电费
-        var eveningPrices = []; // 晚间电费
-        axios.get('http://localhost:8080/price/getRecent')
-          .then(response => {
-            console.log(response.data)
-      
-            var pricess = response.data.data.prices;
-            for (let i = 0; i < response.data.data.prices.length; i++) {
-              if(pricess[i].timeSlot==="DayTime"){
-                morningPrices.push(pricess[i].price)
-              }else{
-                eveningPrices.push(pricess[i].price)
-              }
-              
-            }
-            console.log(morningPrices)
-            
-             // 基于准备好的dom，初始化echarts实例
-        const chart = echarts.init(this.$refs.chart);
 
-// 指定图表的配置项和数据
-const option = {
-  title: {
-    text: 'Last 7 Days Price'
-  },
-  tooltip: {
-    trigger: 'axis'
-  },
-  legend: {
-    data: ['Day Time Energy Price', 'Night Time Energy Price']
-  },
-  xAxis: {
-    type: 'category',
-    boundaryGap: false,
-    data: ['1 Day ago', '2 Days ago', '3 Days ago', '4 Days ago', '5 Days ago', '6 Days ago', 'Today']
-  },
-  yAxis: {
-    type: 'value',
-    min: 0,
-    max: 2
-  },
-  series: [
-    {
-      name: 'Day Time',
-      type: 'line',
-      data: morningPrices
-    },
-    {
-      name: 'Night Time',
-      type: 'line',
-      data: eveningPrices
-    }
-  ]
-};
-
-// 使用刚指定的配置项和数据显示图表。
-chart.setOption(option);
-            
-          })
-          .catch(error => {
-            console.error('Error fetching prices:', error)
-          })
-       
-
-      },
-      fetchPrices() {
-        axios.get('http://localhost:8080/price/all')
-          .then(response => {
-            //console.log(response.data)
-            this.tableData = response.data.data.prices.map(price => ({
-              epid: price.epid,
-              zipcode: price.zipcode,
-              price: price.price,
-              time: price.time,
-              isDeleted: price.isDeleted ? 'Yes' : 'No'
-            }))
-          })
-          .catch(error => {
-            console.error('Error fetching prices:', error)
-          })
-      },
-      initChart() {
-        const chart = echarts.init(this.$refs.chart);
-        const option = {
-          title: {
-            text: 'Price Over'
-          },
-          tooltip: {},
-          xAxis: {
-            type: 'category',
-            data: ['1月', '2月', '3月', '4月', '5月', '6月']
-          },
-          yAxis: {
-            type: 'value'
-          },
-          series: [{
-            data: [820, 932, 901, 934, 1290, 1330],
-            type: 'line'
-          }]
-        };
-        chart.setOption(option);
-      },
-      handleSearch() {
-        this.currentPage = 1
-      },
-      handleSizeChange(newSize) {
-        this.pageSize = newSize
-      },
-      handleCurrentChange(newPage) {
-        this.currentPage = newPage
+    fetchDataAndDrawChart() {
+      // 硬编码的电费数据
+      var morningPrices = []; // 早晨电费
+      var eveningPrices = []; // 晚间电费
+      const userId = localStorage.getItem('userId');
+      const userRole = localStorage.getItem('userRole');
+      var url = "";
+      if (userRole === 'USER') {
+        url = 'http://localhost:8080/price/getRecentByID/'+userId;
+      } else {
+        url = 'http://localhost:8080/price/getRecent';
       }
+      axios.get(url)
+        .then(response => {
+          console.log(userId)
+          console.log(response.data)
+          console.log(userRole)
+          var pricess = response.data.data.prices;
+          for (let i = 0; i < response.data.data.prices.length; i++) {
+            if (pricess[i].timeSlot === "DayTime") {
+              morningPrices.push(pricess[i].price)
+            } else {
+              eveningPrices.push(pricess[i].price)
+            }
+
+          }
+          console.log(morningPrices)
+
+          // 基于准备好的dom，初始化echarts实例
+          const chart = echarts.init(this.$refs.chart);
+
+          // 指定图表的配置项和数据
+          const option = {
+            title: {
+              text: 'Last 7 Days Price'
+            },
+            tooltip: {
+              trigger: 'axis'
+            },
+            legend: {
+              data: ['Day Time Energy Price', 'Night Time Energy Price']
+            },
+            xAxis: {
+              type: 'category',
+              boundaryGap: false,
+              data: ['1 Day ago', '2 Days ago', '3 Days ago', '4 Days ago', '5 Days ago', '6 Days ago', 'Today']
+            },
+            yAxis: {
+              type: 'value',
+              min: 0,
+              max: 2
+            },
+            series: [
+              {
+                name: 'Day Time',
+                type: 'line',
+                data: morningPrices
+              },
+              {
+                name: 'Night Time',
+                type: 'line',
+                data: eveningPrices
+              }
+            ]
+          };
+
+          // 使用刚指定的配置项和数据显示图表。
+          chart.setOption(option);
+
+        })
+        .catch(error => {
+          console.error('Error fetching prices:', error)
+        })
+
+
+    },
+    fetchPrices() {
+      axios.get('http://localhost:8080/price/all')
+        .then(response => {
+          //console.log(response.data)
+          this.tableData = response.data.data.prices.map(price => ({
+            epid: price.epid,
+            zipcode: price.zipcode,
+            price: price.price,
+            time: price.time,
+            isDeleted: price.isDeleted ? 'Yes' : 'No'
+          }))
+        })
+        .catch(error => {
+          console.error('Error fetching prices:', error)
+        })
+    },
+    initChart() {
+      const chart = echarts.init(this.$refs.chart);
+      const option = {
+        title: {
+          text: 'Price Over'
+        },
+        tooltip: {},
+        xAxis: {
+          type: 'category',
+          data: ['1月', '2月', '3月', '4月', '5月', '6月']
+        },
+        yAxis: {
+          type: 'value'
+        },
+        series: [{
+          data: [820, 932, 901, 934, 1290, 1330],
+          type: 'line'
+        }]
+      };
+      chart.setOption(option);
+    },
+    handleSearch() {
+      this.currentPage = 1
+    },
+    handleSizeChange(newSize) {
+      this.pageSize = newSize
+    },
+    handleCurrentChange(newPage) {
+      this.currentPage = newPage
     }
   }
-  
+}
+
 </script>
 
 <style>
