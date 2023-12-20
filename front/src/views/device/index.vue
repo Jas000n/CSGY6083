@@ -176,7 +176,8 @@ export default {
         uid: '',
         serviceLocation: '',
         deviceType: '',
-        model: ''
+        model: '',
+        versionID: null
       },
       formMode: 'add', // 'add' 或 'modify' 来区分表单模式
       uids: [], // 存储UIDs的数组
@@ -327,16 +328,35 @@ export default {
 
     // 打开修改设备的模态框
     openModifyDeviceForm(device) {
+      // 从服务器获取最新的设备详情
+      axios.get(`http://localhost:8080/device/details/${device.id}`)
+        .then(response => {
+          this.currentDeviceDetails = response.data.data.deviceDetails
+          console.log(response.data.data.deviceDetails)
+          console.log(this.currentDeviceDetails.versionID)
+          this.deviceForm = {
+            serviceLocation: device.deviceLocation, // 或其他对应的字段名
+            deviceType: device.deviceType, // 或其他对应的字段名
+            model: device.deviceModel, // 或其他对应的字段名
+            versionID: this.currentDeviceDetails.versionID
+          }
+          this.showDeviceModel = true
+        })
+        .catch(error => {
+          console.error('Error fetching device details:', error)
+        })
       this.resetFormErrors()
       console.log(device)
       this.formMode = 'modify'
       this.formTitle = 'Modify Device'
       this.currentDeviceID = device.id
+
       // 确保你的device对象有正确的属性名
       this.deviceForm = {
         serviceLocation: device.deviceLocation, // 或其他对应的字段名
         deviceType: device.deviceType, // 或其他对应的字段名
-        model: device.deviceModel // 或其他对应的字段名
+        model: device.deviceModel, // 或其他对应的字段名
+        versionID: this.currentDeviceDetails.versionID
       }
       // this.deviceForm = { ...device } // 复制设备数据到表单
       this.showDeviceModel = true
@@ -350,6 +370,11 @@ export default {
 
     // 提交表单
     submitDeviceForm() {
+      if (this.deviceForm.versionID === null || this.deviceForm.versionID === undefined) {
+        console.error('Version ID is not set.')
+        // 处理错误或显示错误消息
+        return
+      }
       if (this.formMode === 'add') {
         this.validateForm()
         // 如果存在任何验证错误，则不提交表单
@@ -374,26 +399,38 @@ export default {
         payload = {
           name: this.deviceForm.deviceType,
           model: this.deviceForm.model,
-          address: this.deviceForm.serviceLocation
+          address: this.deviceForm.serviceLocation,
+          versionID: this.deviceForm.versionID
         }
         url = `http://localhost:8080/device/update/${this.currentDeviceID}` // 更新设备的API端点
       }
-
       axios({
         method: method,
         url: url,
         data: payload
       })
         .then(response => {
-          this.$notify({
-            title: 'Success',
-            message: 'Submit successfully',
-            type: 'success'
-          })
-          console.log(this.currentDeviceID)
-          this.showDeviceModel = false
-          this.fetchDevices() // 重新获取设备列表以显示新添加或更新的设备
+          console.log(response.data)
+          if (response.data.code === -4396) {
+            // 显示错误消息
+            this.$notify({
+              title: 'Error',
+              message: 'Update failed, the device has been modified by another user.',
+              type: 'error'
+            })
+          } else {
+            console.log(response.data)
+            // 正常处理
+            this.$notify({
+              title: 'Success',
+              message: 'Submit successfully',
+              type: 'success'
+            })
+            this.showDeviceModel = false
+            this.fetchDevices() // 重新获取设备列表
+          }
         })
+
         .catch(error => {
           console.error('Error submitting device form:', error)
         })
@@ -459,6 +496,7 @@ export default {
       axios.get(`http://localhost:8080/device/details/${device.id}`)
         .then(response => {
           this.currentDeviceDetails = response.data.data.deviceDetails
+          console.log(this.currentDeviceDetails)
           this.showDetailsModal = true // 打开模态框
         })
         .catch(error => {

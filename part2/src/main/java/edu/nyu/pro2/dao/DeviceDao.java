@@ -104,9 +104,12 @@ public class DeviceDao {
         Integer slid = findServiceLocationIdByAddress(deviceDto.getAddress());
         // 获取当前的versionID
         Integer currentVersionId = getCurrentVersionId(did);
-        if (currentVersionId == null) {
-            // 处理找不到设备或versionID的情况
+        if (currentVersionId == null || !currentVersionId.equals(deviceDto.getVersionID())) {
+            // 如果不匹配，返回一个特定的错误码，例如 -1
+            return -1;
         }
+        System.out.println(deviceDto.getVersionID());
+
         Integer newVersionId = currentVersionId + 1;
 
 //        System.out.println(dtid);

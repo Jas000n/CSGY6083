@@ -31,4 +31,6 @@ public class ServiceLocation {
     private Date startDate;
 
     private Integer isDeleted;
+
+    private String cid;
 }
