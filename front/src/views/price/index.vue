@@ -104,7 +104,7 @@ export default {
             xAxis: {
               type: 'category',
               boundaryGap: false,
-              data: ['1 Day ago', '2 Days ago', '3 Days ago', '4 Days ago', '5 Days ago', '6 Days ago', 'Today']
+              data: ['6 Day ago', '5 Days ago', '4 Days ago', '3 Days ago', '2 Days ago', '1 Days ago', 'Today']
             },
             yAxis: {
               type: 'value',
@@ -151,27 +151,7 @@ export default {
           console.error('Error fetching prices:', error)
         })
     },
-    initChart() {
-      const chart = echarts.init(this.$refs.chart);
-      const option = {
-        title: {
-          text: 'Price Over'
-        },
-        tooltip: {},
-        xAxis: {
-          type: 'category',
-          data: ['1月', '2月', '3月', '4月', '5月', '6月']
-        },
-        yAxis: {
-          type: 'value'
-        },
-        series: [{
-          data: [820, 932, 901, 934, 1290, 1330],
-          type: 'line'
-        }]
-      };
-      chart.setOption(option);
-    },
+    
     handleSearch() {
       this.currentPage = 1
     },
