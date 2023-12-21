@@ -65,4 +65,24 @@ public class EnergyPriceDao {
                 "GROUP BY DATE(EP.time);\n";
         return jdbcTemplate.query(sql, new EnergyPriceDTORowMapper());
     }
+
+    public List<EnergyPriceDTO> findLast7DayByID(String cid){
+        String sql = """
+                with qualified_zip as (    
+                    select zipcode
+                    from ServiceLocation
+                    where cid = ?
+                )
+                SELECT DATE(EP.time) AS time, AVG(EP.price) AS price, 'NightTime' AS timeslot
+                FROM EnergyPrice EP
+                WHERE HOUR(EP.time) = 3 AND EP.time + INTERVAL 7 DAY > NOW() AND EP.time < NOW() AND EP.isdeleted = 0 and ep.zipcode in (select zipcode from qualified_zip)
+                GROUP BY DATE(EP.time)
+                UNION ALL
+                SELECT DATE(EP.time) AS time, AVG(EP.price) AS price, 'DayTime' AS timeslot
+                FROM EnergyPrice EP
+                WHERE HOUR(EP.time) = 12 AND EP.time + INTERVAL 7 DAY > NOW() AND EP.time < NOW()  AND EP.isdeleted = 0 and ep.zipcode in (select zipcode from qualified_zip)
+                GROUP BY DATE(EP.time);""";
+
+        return jdbcTemplate.query(sql,new Object[]{cid}, new EnergyPriceDTORowMapper());
+    }
 }
