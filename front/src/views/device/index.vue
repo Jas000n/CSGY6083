@@ -370,11 +370,7 @@ export default {
 
     // 提交表单
     submitDeviceForm() {
-      if (this.deviceForm.versionID === null || this.deviceForm.versionID === undefined) {
-        console.error('Version ID is not set.')
-        // 处理错误或显示错误消息
-        return
-      }
+
       if (this.formMode === 'add') {
         this.validateForm()
         // 如果存在任何验证错误，则不提交表单
@@ -395,6 +391,11 @@ export default {
         }
         url = 'http://localhost:8080/device/add' // 添加设备的API端点
       } else if (this.formMode === 'modify') {
+        if (this.deviceForm.versionID === null || this.deviceForm.versionID === undefined) {
+        console.error('Version ID is not set.')
+        // 处理错误或显示错误消息
+        return
+      }
         // 构建修改模式下的payload
         payload = {
           name: this.deviceForm.deviceType,

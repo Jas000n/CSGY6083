@@ -89,6 +89,7 @@ public class DeviceDao {
         // 请确认这里是否需要插入versionID和isDeleted
         String sql = "INSERT INTO device (dtid, slid, status,isDeleted,versionID) " +
                 "VALUES ( ?, ?, ?, 0,?)";
+        System.out.println(sql);
         return jdbcTemplate.update(
                 sql,
                 dtid,
