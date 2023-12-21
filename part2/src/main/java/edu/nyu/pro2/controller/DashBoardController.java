@@ -1,6 +1,6 @@
 package edu.nyu.pro2.controller;
 
-import edu.nyu.pro2.dto.DeviceDto;
+import edu.nyu.pro2.dto.DashBoardAdminDTO;
 import edu.nyu.pro2.dto.EnergyConsumptionDTO;
 import edu.nyu.pro2.service.DashBoardService;
 import edu.nyu.pro2.utils.R;
@@ -20,7 +20,21 @@ public class DashBoardController {
     @GetMapping("PreviousConsumptionID/{cid}")
     public R getLastDayConsumptionByID(@PathVariable String cid){
         try {
-            List<EnergyConsumptionDTO> DTO = dashBoardService.getLastDayConsumptionByCid(cid);
+            List<EnergyConsumptionDTO> DTO = dashBoardService.getPreviousConsumptionByCid(cid);
+            if (DTO != null) {
+                return R.ok().message("fetched successfully").data("EnergyConsumption", DTO);
+            } else {
+                return R.error().message("EnergyConsumption not found");
+            }
+        } catch (Exception e) {
+            return R.error().message("Error fetching energyConsumption details: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("PreviousConsumption/")
+    public R getPreviousConsumption(){
+        try {
+            List<DashBoardAdminDTO> DTO = dashBoardService.getPreviousConsumption();
             if (DTO != null) {
                 return R.ok().message("fetched successfully").data("EnergyConsumption", DTO);
             } else {

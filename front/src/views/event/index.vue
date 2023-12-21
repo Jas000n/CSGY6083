@@ -21,13 +21,7 @@
       <el-table-column prop="eventValue1" label="Event Value 1" width="140" sortable />
       <el-table-column prop="eventValue2" label="Event Value 2" width="140" sortable />
       <el-table-column prop="eventTime" label="Event Time" width="160" sortable />
-      <el-table-column label="Operation" width="300">
-        <template slot-scope="scope">
-          <el-button size="mini" @click="handleView(scope.row)">Check</el-button>
-          <el-button size="mini" type="warning" @click="handleEdit(scope.row)">Modify</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(scope.row)">Delete</el-button>
-        </template>
-      </el-table-column>
+      
     </el-table>
 
     <!-- Pagination -->
